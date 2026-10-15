@@ -61,6 +61,7 @@ function Invoke-ConvertAll($settings) {
         $missing | ForEach-Object { Fail "$($_.Name) - run: KindleDeDrm install $($_.Component)" }
         throw 'requirements missing'
     }
+    Stop-AppIfRunning 'calibre' 'Calibre'
     $pending = @(Get-BookIndex -Library $settings.Library | Where-Object { 'new', 'extracted', 'in Calibre' -contains $_.Status })
     if ($pending.Count -eq 0) { Ok 'nothing new to convert'; return }
     Step "Converting $($pending.Count) book(s)"

@@ -9,6 +9,17 @@ function New-CalibreBook($id, $asin, $title, $authors, [string[]]$formats) {
     [pscustomobject]@{ id = $id; title = $title; authors = $authors; formats = $formats; identifiers = $ids }
 }
 
+Describe 'Get-LibraryBooks' {
+    $libDir = Join-Path $TestDrive 'lib'
+    New-Item -ItemType Directory $libDir | Out-Null
+    New-Item -ItemType File (Join-Path $libDir 'metadata.db') | Out-Null
+
+    It 'throws instead of returning an empty library when calibredb fails (e.g. Calibre is open)' {
+        Mock Invoke-Native { [pscustomobject]@{ Output = ''; Code = 1 } }
+        { Get-LibraryBooks -Library $libDir } | Should Throw 'could not read the Calibre library'
+    }
+}
+
 Describe 'Merge-BookIndex' {
     $kindle = @(
         (New-KindleBook 'B1' $false), (New-KindleBook 'B2'), (New-KindleBook 'B3'),
@@ -46,6 +57,14 @@ Describe 'Merge-BookIndex' {
         $byKey['calibre:7'].Status | Should Be 'not downloaded'
         $byKey['calibre:7'].HasEpub | Should Be $true
     }
+    It 'does not offer PDF-only or KFX-ZIP-only Calibre books for conversion' {
+        $odd = @(
+            (New-CalibreBook 8 $null 'A PDF' 'X' @('C:\lib\8.pdf')),
+            (New-CalibreBook 9 'B9' 'Failed DRM' 'Y' @('C:\lib\9.kfx-zip'))
+        )
+        $r = @(Merge-BookIndex -Kindle @((New-KindleBook 'B9')) -Extracted @{ 'B9' = 'C:\a\B9_EBOK.kfx-zip' } -Titles @{} -Calibre $odd)
+        ($r | ForEach-Object Status) -join '|' | Should Be 'other format|other format'
+    }
     It 'returns nothing for empty inputs' {
         @(Merge-BookIndex -Kindle @() -Extracted @{} -Titles @{} -Calibre @()).Count | Should Be 0
     }
@@ -54,6 +73,13 @@ Describe 'Merge-BookIndex' {
         $found = @(Find-Books -Books $books -Query 'AUTHOR FOUR')
         $found.Count | Should Be 1
         $found[0].Key | Should Be 'B4'
+    }
+    It 'treats [ and ] in a search literally' {
+        $bracket = @([pscustomobject]@{ Title = 'Saga [Vol 1]'; Authors = 'Z'; Status = 'EPUB done'; StatusOrder = 5 }) + $books
+        { Find-Books -Books $bracket -Query 'Saga [' } | Should Not Throw
+        $found = @(Find-Books -Books $bracket -Query '[vol 1]')
+        $found.Count | Should Be 1
+        $found[0].Title | Should Be 'Saga [Vol 1]'
     }
     It 'returns everything for a blank query, unconverted books first' {
         $found = @(Find-Books -Books $books -Query '')

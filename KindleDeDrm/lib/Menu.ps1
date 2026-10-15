@@ -39,6 +39,7 @@ function Start-MainMenu {
             }
         } catch {
             Fail "Error: $($_.Exception.Message)"
+            if ($choice -eq '3') { Wait-Return }
         }
         if ($choice -ne '3') { Wait-Return }
     }
@@ -153,6 +154,8 @@ function Show-BooksMenu {
         Wait-Return
         return
     }
+    # calibredb cannot read the library while the Calibre app is open.
+    Stop-AppIfRunning 'calibre' 'Calibre'
     if ((Read-Line '  Refresh Kindle books now? [Y/s]') -notmatch '^[Ss]') {
         try { Update-Books $Settings } catch { Fail "Error: $($_.Exception.Message)" }
     }

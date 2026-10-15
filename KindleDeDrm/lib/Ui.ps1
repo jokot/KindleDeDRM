@@ -56,6 +56,7 @@ function Write-BookTable {
             'EPUB done'      { 'Green' }
             'incomplete'     { 'Yellow' }
             'not downloaded' { 'DarkGray' }
+            'other format'   { 'DarkGray' }
             default          { 'White' }
         }
         $line = $fmt -f $i, (Limit-Text "$($b.Title)" $titleWidth), (Limit-Text "$($b.Authors)" $authorWidth), $b.Status

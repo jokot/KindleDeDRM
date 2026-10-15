@@ -1,7 +1,7 @@
 # One merged list of books from Kindle, the extractor output, the title index and Calibre.
 # Depends on: Config, Ui, Native, Prereqs (Get-KindleContentDir).
 
-$StatusOrder = @{ 'incomplete' = 1; 'new' = 2; 'extracted' = 3; 'in Calibre' = 4; 'EPUB done' = 5; 'not downloaded' = 6 }
+$StatusOrder = @{ 'incomplete' = 1; 'new' = 2; 'extracted' = 3; 'in Calibre' = 4; 'EPUB done' = 5; 'not downloaded' = 6; 'other format' = 7 }
 
 function Get-KindleBooks {
     $content = Get-KindleContentDir
@@ -22,7 +22,8 @@ function Get-LibraryBooks {
     param([Parameter(Mandatory)][string]$Library)
     if (-not (Test-Path (Join-Path $Library 'metadata.db'))) { return }
     $r = Invoke-Native $Calibredb @('list', '--with-library', $Library, '--fields', 'title,authors,formats,identifiers', '--for-machine') -StdoutOnly
-    if (-not $r.Output.Trim()) { return }
+    if ($r.Code -ne 0) { throw "could not read the Calibre library at $Library - close Calibre and try again" }
+    if (-not "$($r.Output)".Trim()) { return }
     $books = $r.Output | ConvertFrom-Json
     $books
 }
@@ -126,9 +127,10 @@ function Merge-BookIndex {
             if ($r.Downloaded -and -not $r.Complete) { 'incomplete' }
             elseif ($r.Downloaded -and -not $r.Extracted -and -not $r.CalibreId) { 'new' }
             elseif ($r.Extracted -and -not $r.CalibreId) { 'extracted' }
-            elseif (-not $r.HasEpub) { 'in Calibre' }
-            elseif ($r.Downloaded) { 'EPUB done' }
-            else { 'not downloaded' }
+            elseif ($r.HasEpub -and $r.Downloaded) { 'EPUB done' }
+            elseif ($r.HasEpub) { 'not downloaded' }
+            elseif ($r.HasKfx) { 'in Calibre' }
+            else { 'other format' }   # e.g. PDF-only, or a KFX-ZIP whose DRM was not removed
         $r.StatusOrder = $StatusOrder[$r.Status]
     }
     @($records.Values)
@@ -144,7 +146,10 @@ function Find-Books {
     param([object[]]$Books, [string]$Query)
     $q = "$Query".Trim()
     $hits = if ($q) {
-        $Books | Where-Object { "$($_.Title)" -like "*$q*" -or "$($_.Authors)" -like "*$q*" }
+        $Books | Where-Object {
+            "$($_.Title)".IndexOf($q, [StringComparison]::OrdinalIgnoreCase) -ge 0 -or
+            "$($_.Authors)".IndexOf($q, [StringComparison]::OrdinalIgnoreCase) -ge 0
+        }
     } else { $Books }
     @($hits | Sort-Object StatusOrder, Title)
 }
