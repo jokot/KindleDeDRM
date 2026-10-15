@@ -25,7 +25,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline', 'Menu') { . (Join-Path $PSScriptRoot "lib\$file.ps1") }
+foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline', 'Banner', 'Menu') { . (Join-Path $PSScriptRoot "lib\$file.ps1") }
 
 function Show-Help {
     Say @"
