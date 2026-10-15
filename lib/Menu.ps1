@@ -27,9 +27,10 @@ function Start-MainMenu {
         Say '  2) Install prerequisites'
         Say '  3) DeDRM books'
         Say '  4) Settings'
-        Say '  5) Clean temp files'
+        Say '  5) Rename EPUB files'
+        Say '  6) Clean temp files'
         Say '  0) Exit'
-        $choice = Read-MenuChoice -Valid '0', '1', '2', '3', '4', '5'
+        $choice = Read-MenuChoice -Valid '0', '1', '2', '3', '4', '5', '6'
         if ($choice -eq '0') { return }
         try {
             switch ($choice) {
@@ -37,7 +38,8 @@ function Start-MainMenu {
                 '2' { Show-PrereqMenu; $status = $null }
                 '3' { Show-BooksMenu -Settings $Settings; $status = $null }
                 '4' { $Settings = Show-SettingsMenu -Settings $Settings; $status = $null }
-                '5' { Invoke-Clean }
+                '5' { Show-RenameMenu -Settings $Settings }
+                '6' { Invoke-Clean }
             }
         } catch {
             Fail "Error: $($_.Exception.Message)"
@@ -143,6 +145,23 @@ function Open-BookFolder($book) {
     if (-not $path) { Warn "$($book.Title): no files found - refresh Kindle books and try again"; return }
     Start-Process explorer.exe "/select,`"$path`""
     Ok "$($book.Title): opened $(Split-Path $path)"
+}
+
+function Show-RenameMenu {
+    param([Parameter(Mandatory)]$Settings)
+    Step 'Rename EPUB files'
+    Say '  Renames EPUB files to "Title - Author.epub" using the title and author stored inside each file.'
+    Say '  Files without them keep their name, with symbols removed. You see a preview before anything changes.'
+    Say '  Tip: drag a folder or file from Explorer into this window to paste its path.'
+    $path = (Read-Line "`n  Folder or EPUB file (Enter = $($Settings.OutDir), 0 = back)").Trim().Trim('"', "'").Trim()
+    if ($path -eq '0') { return }
+    if (-not $path) { $path = $Settings.OutDir }
+    $recurse = $false
+    if ((Test-Path -LiteralPath $path -PathType Container) -and
+        (Get-ChildItem -LiteralPath $path -Directory | Where-Object { Get-ChildItem -LiteralPath $_.FullName -Filter *.epub -File -Recurse | Select-Object -First 1 })) {
+        $recurse = (Read-Line '  Include subfolders too? [y/N]') -match '^[Yy]'
+    }
+    Invoke-RenameEpubs -Path $path -Recurse:$recurse
 }
 
 # The legend under the book list: one line per kind of answer.

@@ -18,14 +18,15 @@ param(
     [string]$Library,
     [int]$StallSeconds,
     [switch]$Yes,
-    [switch]$Force
+    [switch]$Force,
+    [switch]$Recurse
 )
 
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline', 'Banner', 'Menu') { . (Join-Path $PSScriptRoot "lib\$file.ps1") }
+foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline', 'Rename', 'Banner', 'Menu') { . (Join-Path $PSScriptRoot "lib\$file.ps1") }
 
 function Show-Help {
     Say @"
@@ -43,6 +44,8 @@ COMMANDS
                                         dedrm-plugin, kfx-input
                             optional:   store-updates-off, store-updates-on
   convert                convert every new book to EPUB
+  rename [path]          rename EPUB files to "Title - Author.epub" (default: your EPUB folder)
+                            add -Recurse for subfolders; shows a preview and asks first
   clean                  delete temporary files left by the extractor
   help                   show this help
 
@@ -52,6 +55,7 @@ OPTIONS (this run only; use the Settings menu to change them permanently)
   -StallSeconds <n>      skip a book whose extraction hangs this long
   -Yes                   answer yes to every question
   -Force                 reinstall components that are already installed
+  -Recurse               rename: include subfolders
 "@
 }
 
@@ -89,6 +93,7 @@ try {
         'check'   { Show-Requirements }
         'install' { Invoke-Install $Component -Force:$Force; Show-Requirements }
         'convert' { Invoke-ConvertAll $settings }
+        'rename'  { Invoke-RenameEpubs -Path $(if ($Component) { $Component -join ' ' } else { $settings.OutDir }) -Recurse:$Recurse }
         'clean'   { Invoke-Clean }
         'help'    { Show-Help }
         default   { throw "unknown command '$Command' - run: KindleDeDRM help" }

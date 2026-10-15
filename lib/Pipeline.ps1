@@ -123,7 +123,10 @@ function Export-Epubs {
             '--dont-save-cover', '--dont-write-opf', '--single-dir', '--to-dir', $tmp) | Out-Null
         $file = Get-ChildItem $tmp -Filter *.epub | Select-Object -First 1
         if ($file) {
-            $dest = Join-Path $OutDir $file.Name
+            # Same naming rule as Rename EPUB files, so a re-export never creates a second copy under another name.
+            $name = (Get-EpubTargetName $file.FullName).Name
+            if (-not $name) { $name = $file.Name }
+            $dest = Join-Path $OutDir $name
             Move-Item $file.FullName $dest -Force
             $result[$id] = $dest
         }
@@ -189,7 +192,13 @@ function Invoke-BookAction {
     foreach ($b in $work) {
         if ($b.CalibreId -and $exported.ContainsKey($b.CalibreId)) {
             if (-not $index.ContainsKey($b.Key)) { $index[$b.Key] = @{ Title = $b.Title; Authors = $b.Authors; Exported = $null } }
-            $index[$b.Key].Exported = $exported[$b.CalibreId]
+            # Remove this book's previous export when its name changed (e.g. the title was edited in Calibre).
+            $old = $index[$b.Key].Exported
+            $new = $exported[$b.CalibreId]
+            if ($old -and $old -ne $new -and (Split-Path $old) -eq (Split-Path $new) -and (Test-Path -LiteralPath $old)) {
+                Remove-Item -LiteralPath $old -Force
+            }
+            $index[$b.Key].Exported = $new
             $results[$b.Key] = New-Result $b $true $exported[$b.CalibreId]
         } elseif ($Action -eq 'Convert' -and $b.HasEpub -and $b.Exported -and (Test-Path $b.Exported)) {
             $results[$b.Key] = New-Result $b $true "already done: $($b.Exported)"
