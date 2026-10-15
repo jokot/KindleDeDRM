@@ -115,8 +115,8 @@ function Merge-BookIndex {
         $r.HasKfx = [bool]$r.KfxPath; $r.HasEpub = [bool]$r.EpubPath
     }
     foreach ($r in $records.Values) {
-        if ($r.Asin -and $Titles.ContainsKey($r.Asin)) {
-            $t = $Titles[$r.Asin]
+        if ($Titles.ContainsKey($r.Key)) {
+            $t = $Titles[$r.Key]
             if (-not $r.Title) { $r.Title = $t.Title }
             if (-not $r.Authors) { $r.Authors = $t.Authors }
             $r.Exported = $t.Exported
