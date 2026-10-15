@@ -91,3 +91,24 @@ function ConvertFrom-Selection {
     }
     @($picked | Sort-Object -Unique)
 }
+
+# Reads one answer at the book list: blank = clear search, 0 = back, a = toggle Calibre-only books,
+# a pick (1,3  2-5  all  new) = pick, /text or anything else = search.
+# Returns @{ Kind = clear|back|toggle|pick|search|error; Value = row numbers, query or message }.
+function Resolve-BooksInput {
+    param([string]$Text, [int]$Count, [int[]]$NewIndexes = @())
+    $t = "$Text".Trim()
+    $result = { param($kind, $value) [pscustomobject]@{ Kind = $kind; Value = $value } }
+    if ($t -eq '') { return & $result 'clear' $null }
+    if ($t -eq '0') { return & $result 'back' $null }
+    if ($t -eq 'a') { return & $result 'toggle' $null }
+    if ($t.StartsWith('/')) {
+        $q = $t.Substring(1).Trim()
+        if ($q) { return & $result 'search' $q } else { return & $result 'clear' $null }
+    }
+    # Only input shaped like a pick is treated as one, so a typo in "2-5" is reported, not searched.
+    if ($t -notmatch '^(all|new|[\d\s,-]+)$') { return & $result 'search' $t }
+    if ($Count -eq 0) { return & $result 'error' 'no books listed to pick from' }
+    try { & $result 'pick' @(ConvertFrom-Selection -Text $t -Count $Count -NewIndexes $NewIndexes) }
+    catch { & $result 'error' $_.Exception.Message }
+}

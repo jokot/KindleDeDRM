@@ -142,8 +142,10 @@ function Get-BookIndex {
 }
 
 # Case-insensitive substring match on title or author; unconverted books first.
+# -DownloadedOnly drops Calibre-only books (no download in Kindle).
 function Find-Books {
-    param([object[]]$Books, [string]$Query)
+    param([object[]]$Books, [string]$Query, [switch]$DownloadedOnly)
+    if ($DownloadedOnly) { $Books = @($Books | Where-Object { $_.Downloaded }) }
     $q = "$Query".Trim()
     $hits = if ($q) {
         $Books | Where-Object {

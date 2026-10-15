@@ -88,4 +88,12 @@ Describe 'Merge-BookIndex' {
             Should Be 'incomplete|new|extracted|in Calibre|EPUB done|not downloaded|not downloaded'
         $found[5].Title | Should Be 'Sideloaded'
     }
+    It 'lists only books downloaded in Kindle with -DownloadedOnly' {
+        $found = @(Find-Books -Books $books -Query '' -DownloadedOnly)
+        ($found | ForEach-Object Key) -join '|' | Should Be 'B1|B2|B3|B4|B5'
+    }
+    It 'combines -DownloadedOnly with a search' {
+        @(Find-Books -Books $books -Query 'six' -DownloadedOnly).Count | Should Be 0
+        @(Find-Books -Books $books -Query 'six').Count | Should Be 1
+    }
 }

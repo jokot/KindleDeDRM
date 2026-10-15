@@ -58,8 +58,13 @@ This removes the app, the PATH entry and the shortcut. It keeps your extracted b
 2. **Install prerequisites** installs only what's missing. For each item it explains why it's needed and where it comes from, then asks before installing. If everything is already installed, you can reinstall one part or switch Microsoft Store auto-updates on or off.
 3. **DeDRM books**:
    - **Refresh:** it first offers to extract any newly downloaded Kindle books (`s` skips this).
-   - **Search:** type part of a title or author (blank shows every book).
-   - **Pick:** choose books by number, e.g. `1,3`, `2-5`, `all`, or `new` for everything not yet converted.
+   - **List:** every book downloaded in Kindle is shown straight away, unconverted ones first.
+   - **One prompt does the rest:**
+     - **Pick** books by number, e.g. `1,3`, `2-5`, `all`, or `new` for everything not yet converted.
+     - **Search** by typing part of a title or author. The list narrows and the numbers restart from 1. To search for a number or a keyword such as `new`, start with a slash: `/1984`.
+     - **Blank** clears the search.
+     - `a` shows or hides Calibre-only books (ones no longer downloaded in Kindle, or sideloaded). They're hidden by default.
+     - `0` goes back.
    - **Choose an action:**
      - **Convert:** does whatever each book still needs (extract, import, EPUB, export).
      - **Re-convert:** rebuilds the EPUB, for example after you fix a title or author in Calibre.

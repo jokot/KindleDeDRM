@@ -162,26 +162,39 @@ function Show-BooksMenu {
         try { Update-Books $Settings } catch { Fail "Error: $($_.Exception.Message)" }
     }
 
-    $query = $null
+    $query = ''
+    $showAll = $false   # include Calibre-only books (not downloaded in Kindle)
+    $all = $null        # cached book index; reset after an action changes statuses
+    $redraw = $true
     while ($true) {
-        if ($null -eq $query) {
-            $query = (Read-Line "`n  Search (title/author, blank = all, 0 = back)").Trim()
-            if ($query -eq '0') { return }
+        if ($null -eq $all) { $all = @(Get-BookIndex -Library $Settings.Library) }
+        $books = @(Find-Books $all $query -DownloadedOnly:(-not $showAll))
+        if ($redraw) {
+            $scope = if ($showAll) { 'books' } else { 'downloaded Kindle books' }
+            $total = @(Find-Books $all '' -DownloadedOnly:(-not $showAll)).Count
+            $header = if ($query) { "Search `"$query`" - $($books.Count) of $total $scope" }
+                      elseif ($showAll) { "All books ($total)" } else { "Downloaded Kindle books ($total)" }
+            $hidden = @($all | Where-Object { -not $_.Downloaded }).Count
+            $hint = if ($showAll) { '  .  a = hide Calibre-only' } elseif ($hidden) { "  .  $hidden Calibre-only hidden, a = show" } else { '' }
+            Write-Host "`n  $header$hint" -ForegroundColor Cyan
+            if ($books.Count) { Write-BookTable $books } else { Warn 'no books match' }
         }
-        $books = @(Find-Books (Get-BookIndex -Library $Settings.Library) $query)
-        if ($books.Count -eq 0) { Warn 'no books match'; $query = $null; continue }
-        Write-Host ''
-        Write-BookTable $books
+        $redraw = $true
         $newIndexes = @(for ($i = 0; $i -lt $books.Count; $i++) {
             if ('new', 'extracted', 'in Calibre' -contains $books[$i].Status) { $i + 1 }
         })
 
-        $text = Read-Line "`n  Pick books (e.g. 1,3  2-5  all  new; blank = new search)"
-        try {
-            $picked = @(ConvertFrom-Selection -Text $text -Count $books.Count -NewIndexes $newIndexes)
-        } catch { Warn $_.Exception.Message; continue }
-        if ($picked.Count -eq 0) { $query = $null; continue }
-        $chosen = @($picked | ForEach-Object { $books[$_ - 1] })
+        $text = Read-Line "`n  Pick (1,3  2-5  all  new), type to search (/text for numbers), blank = full list, a, 0 = back"
+        $in = Resolve-BooksInput -Text $text -Count $books.Count -NewIndexes $newIndexes
+        switch ($in.Kind) {
+            'back'   { return }
+            'clear'  { $query = '' }
+            'toggle' { $showAll = -not $showAll }
+            'search' { $query = $in.Value }
+            'error'  { Warn $in.Value; $redraw = $false }
+        }
+        if ($in.Kind -ne 'pick') { continue }
+        $chosen = @($in.Value | ForEach-Object { $books[$_ - 1] })
 
         Say '  Action: 1) Convert  2) Re-convert  3) Re-export  4) Open folder  0) Back'
         $action = Read-MenuChoice -Prompt '  > (Enter = 1)' -Valid '', '0', '1', '2', '3', '4'
@@ -195,5 +208,6 @@ function Show-BooksMenu {
                 else { Write-Host "  FAILED  $($r.Title) - $($r.Message)" -ForegroundColor Red }
             }
         } catch { Fail "Error: $($_.Exception.Message)" }
+        $all = $null
     }
 }
