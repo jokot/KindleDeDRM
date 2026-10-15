@@ -137,14 +137,12 @@ function Update-Books($settings) {
     Ok "$($new.Count) new book(s) extracted"
 }
 
+# Opens Explorer with the book's furthest-along file selected (see Get-BookLocation).
 function Open-BookFolder($book) {
-    if ($book.Exported -and (Test-Path $book.Exported)) {
-        Start-Process explorer.exe "/select,`"$($book.Exported)`""
-        return
-    }
-    $path = if ($book.EpubPath) { $book.EpubPath } else { $book.KfxPath }
-    if ($path) { Start-Process explorer.exe "`"$(Split-Path ($path -replace '/', '\'))`"" }
-    else { Warn "$($book.Title): nothing to open yet - convert it first" }
+    $path = Get-BookLocation $book
+    if (-not $path) { Warn "$($book.Title): no files found - refresh Kindle books and try again"; return }
+    Start-Process explorer.exe "/select,`"$path`""
+    Ok "$($book.Title): opened $(Split-Path $path)"
 }
 
 # The legend under the book list: one line per kind of answer.
@@ -221,7 +219,7 @@ function Show-BooksMenu {
         Say '  Action: 1) Convert  2) Re-convert  3) Re-export  4) Open folder  0) Back'
         $action = Read-MenuChoice -Prompt '  > (Enter = 1)' -Valid '', '0', '1', '2', '3', '4'
         if ($action -eq '0') { continue }
-        if ($action -eq '4') { $chosen | ForEach-Object { Open-BookFolder $_ }; continue }
+        if ($action -eq '4') { $chosen | ForEach-Object { Open-BookFolder $_ }; $redraw = $false; continue }
         $name = switch ($action) { '2' { 'Reconvert' } '3' { 'Reexport' } default { 'Convert' } }
         try {
             Step "$name $($chosen.Count) book(s)"
