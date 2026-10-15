@@ -76,7 +76,7 @@ This removes the app, the PATH entry and the shortcut. It keeps your extracted b
      - **Convert:** does whatever each book still needs (extract, import, EPUB, export).
      - **Re-convert:** rebuilds the EPUB, for example after you fix a title or author in Calibre.
      - **Re-export:** copies the EPUB to your EPUB folder again.
-     - **Open folder:** shows the EPUB in Explorer.
+     - **Open folder:** opens Explorer on the book's newest file: the exported EPUB, else the EPUB or KFX in Calibre, else the extracted `.kfx-zip`, else the Kindle download folder.
 4. **Settings** lets you change the EPUB folder, the Calibre library, the stall timeout and Microsoft Store auto-updates. They're saved and remembered.
 5. **Clean temp files** deletes the extractor's temporary `C:\Data` folder (about 400 MB).
 

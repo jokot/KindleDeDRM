@@ -141,6 +141,16 @@ function Get-BookIndex {
     Merge-BookIndex -Kindle @(Get-KindleBooks) -Extracted (Get-ExtractedBooks) -Titles (Read-TitleIndex) -Calibre @(Get-LibraryBooks -Library $Library)
 }
 
+# The furthest-along file that still exists for a book: exported EPUB, Calibre EPUB, Calibre KFX,
+# extracted .kfx-zip, then the Kindle download folder. $null when there is none.
+function Get-BookLocation($Book) {
+    foreach ($path in $Book.Exported, $Book.EpubPath, $Book.KfxPath, $Book.KfxZipPath, $Book.KindlePath) {
+        if (-not $path) { continue }
+        $path = $path -replace '/', '\'
+        if (Test-Path -LiteralPath $path) { return $path }
+    }
+}
+
 # Case-insensitive substring match on title or author; unconverted books first.
 # -DownloadedOnly drops Calibre-only books (no download in Kindle).
 function Find-Books {

@@ -97,3 +97,32 @@ Describe 'Merge-BookIndex' {
         @(Find-Books -Books $books -Query 'six').Count | Should Be 1
     }
 }
+
+Describe 'Get-BookLocation' {
+    $kindleDir = Join-Path $TestDrive 'kindle\B1_EBOK'; New-Item -ItemType Directory $kindleDir | Out-Null
+    $kfxZip = Join-Path $TestDrive 'B1_EBOK.kfx-zip'; Set-Content $kfxZip 'x'
+    $calKfx = Join-Path $TestDrive 'cal\b.kfx'; New-Item -ItemType Directory (Split-Path $calKfx) | Out-Null; Set-Content $calKfx 'x'
+    $calEpub = Join-Path $TestDrive 'cal\b.epub'; Set-Content $calEpub 'x'
+    $exported = Join-Path $TestDrive 'out\b.epub'; New-Item -ItemType Directory (Split-Path $exported) | Out-Null; Set-Content $exported 'x'
+    function New-Rec($h) { $r = @{ KindlePath = $null; KfxZipPath = $null; KfxPath = $null; EpubPath = $null; Exported = $null }; foreach ($k in $h.Keys) { $r[$k] = $h[$k] }; [pscustomobject]$r }
+
+    It 'shows the extracted .kfx-zip for an extracted book' {
+        Get-BookLocation (New-Rec @{ KindlePath = $kindleDir; KfxZipPath = $kfxZip }) | Should Be $kfxZip
+    }
+    It 'shows the Kindle download folder for a new book' {
+        Get-BookLocation (New-Rec @{ KindlePath = $kindleDir }) | Should Be $kindleDir
+    }
+    It 'prefers the exported EPUB, then the Calibre EPUB, then the Calibre KFX' {
+        $all = @{ KindlePath = $kindleDir; KfxZipPath = $kfxZip; KfxPath = $calKfx; EpubPath = $calEpub; Exported = $exported }
+        Get-BookLocation (New-Rec $all) | Should Be $exported
+        $all.Exported = $null; Get-BookLocation (New-Rec $all) | Should Be $calEpub
+        $all.EpubPath = $null; Get-BookLocation (New-Rec $all) | Should Be $calKfx
+    }
+    It 'skips files that no longer exist and converts Calibre slashes' {
+        $r = New-Rec @{ Exported = (Join-Path $TestDrive 'gone.epub'); EpubPath = ($calEpub -replace '\\', '/') }
+        Get-BookLocation $r | Should Be $calEpub
+    }
+    It 'returns nothing when the book has no files' {
+        Get-BookLocation (New-Rec @{}) | Should BeNullOrEmpty
+    }
+}
