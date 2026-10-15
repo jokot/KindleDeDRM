@@ -25,12 +25,7 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline') { . (Join-Path $PSScriptRoot "lib\$file.ps1") }
-if (Test-Path (Join-Path $PSScriptRoot 'lib\Menu.ps1')) {
-    . (Join-Path $PSScriptRoot 'lib\Menu.ps1')
-} else {
-    function Start-MainMenu { Say 'menu coming in Task 7' }
-}
+foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline', 'Menu') { . (Join-Path $PSScriptRoot "lib\$file.ps1") }
 
 function Show-Help {
     Say @"
