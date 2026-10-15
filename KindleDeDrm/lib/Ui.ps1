@@ -9,16 +9,23 @@ function Warn($msg) { Write-Host "  [warn] $msg" -ForegroundColor Yellow }
 function Fail($msg) { Write-Host "  [fail] $msg" -ForegroundColor Red }
 function Show-Value($v) { if ($v) { "$v" } else { '-' } }
 
+# Read-Host returns $null once piped input runs out; stop instead of looping on empty answers.
+function Read-Line($prompt) {
+    $answer = Read-Host $prompt
+    if ($null -eq $answer) { throw 'input closed - no more answers to read' }
+    "$answer"
+}
+
 function Confirm-Step($question) {
     if ($script:AssumeYes) { return $true }
-    $answer = Read-Host "  $question [Y/n]"
+    $answer = Read-Line "  $question [Y/n]"
     return ($answer -eq '' -or $answer -match '^[Yy]')
 }
 
 function Read-MenuChoice {
-    param([string]$Prompt = '  >', [Parameter(Mandatory)][string[]]$Valid)
+    param([string]$Prompt = '  >', [Parameter(Mandatory)][AllowEmptyString()][string[]]$Valid)
     while ($true) {
-        $answer = "$(Read-Host $Prompt)".Trim().ToLower()
+        $answer = (Read-Line $Prompt).Trim().ToLower()
         if ($Valid -contains $answer) { return $answer }
         Say "  Choose one of: $($Valid -join ', ')"
     }

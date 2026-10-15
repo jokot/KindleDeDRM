@@ -1,6 +1,28 @@
 $lib = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) '..\lib'
 . "$lib\Ui.ps1"
 
+Describe 'Read-Line' {
+    It 'returns what was typed' {
+        Mock Read-Host { 'abc' }
+        Read-Line 'prompt' | Should Be 'abc'
+    }
+    It 'throws when input is closed instead of looping on empty answers' {
+        Mock Read-Host { $null }
+        { Read-Line 'prompt' } | Should Throw 'input closed'
+    }
+}
+
+Describe 'Read-MenuChoice' {
+    It 'accepts a blank answer when blank is a valid choice' {
+        Mock Read-Host { '' }
+        Read-MenuChoice -Valid '', '0', '1' | Should Be ''
+    }
+    It 'normalises case and spaces' {
+        Mock Read-Host { ' A ' }
+        Read-MenuChoice -Valid '0', 'a' | Should Be 'a'
+    }
+}
+
 Describe 'ConvertFrom-Selection' {
     It 'parses a list' { (ConvertFrom-Selection -Text '1,3' -Count 5) -join ',' | Should Be '1,3' }
     It 'parses a range' { (ConvertFrom-Selection -Text '2-5' -Count 5) -join ',' | Should Be '2,3,4,5' }
