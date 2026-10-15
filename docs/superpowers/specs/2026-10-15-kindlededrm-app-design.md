@@ -1,4 +1,4 @@
-# KindleDeDrm app: design
+# KindleDeDRM app: design
 
 - **Date:** 2026-10-15
 - **Status:** approved in chat. Waiting for review of this written spec.
@@ -6,7 +6,7 @@
 
 ## 1. Purpose
 
-Make the existing `kindle-dedrm` command-line tool into one app called **KindleDeDrm**. You install it once and then start it from any terminal with `KindleDeDrm`. It works much like KindleFetch: a menu leads you through:
+Make the existing `kindle-dedrm` command-line tool into one app called **KindleDeDRM**. You install it once and then start it from any terminal with `KindleDeDRM`. It works much like KindleFetch: a menu leads you through:
 
 1. checking the prerequisites,
 2. installing the prerequisites,
@@ -18,7 +18,7 @@ Make the existing `kindle-dedrm` command-line tool into one app called **KindleD
 
 **Success means:**
 
-- After running `install.cmd` once, `KindleDeDrm` opens the menu from any new terminal, and the app also appears in the Start menu.
+- After running `install.cmd` once, `KindleDeDRM` opens the menu from any new terminal, and the app also appears in the Start menu.
 - Every task can be done from the menu, with no need to remember commands.
 - You can search across all your books: books downloaded in Kindle and books already in Calibre. You can pick some of them and convert, re-convert or re-export just those.
 - Existing data in `%LOCALAPPDATA%\kindle-dedrm\` (27 extracted books, their keys and logs) keeps working with no migration.
@@ -45,10 +45,10 @@ Make the existing `kindle-dedrm` command-line tool into one app called **KindleD
 
 ### `install.cmd`
 
-1. Copies `KindleDeDrm.cmd`, `KindleDeDrm.ps1`, `lib\`, and `README.md` to `%LOCALAPPDATA%\Programs\KindleDeDrm\`, overwriting anything already there. Running it again updates the app in place.
+1. Copies `KindleDeDRM.cmd`, `KindleDeDRM.ps1`, `lib\`, and `README.md` to `%LOCALAPPDATA%\Programs\KindleDeDRM\`, overwriting anything already there. Running it again updates the app in place.
 2. Adds that folder to the **user** `PATH` if it isn't there yet. Because it's the user PATH, no admin rights are needed. The change is written with `[Environment]::SetEnvironmentVariable(..., 'User')`.
-3. Creates the Start-menu shortcut `%APPDATA%\Microsoft\Windows\Start Menu\Programs\KindleDeDrm.lnk`. The shortcut runs `powershell.exe -NoProfile -ExecutionPolicy Bypass -NoExit -File "<install dir>\KindleDeDrm.ps1"`.
-4. Prints "Installed. Open a new terminal and run: KindleDeDrm".
+3. Creates the Start-menu shortcut `%APPDATA%\Microsoft\Windows\Start Menu\Programs\KindleDeDRM.lnk`. The shortcut runs `powershell.exe -NoProfile -ExecutionPolicy Bypass -NoExit -File "<install dir>\KindleDeDRM.ps1"`.
+4. Prints "Installed. Open a new terminal and run: KindleDeDRM".
 
 `install.cmd` only launches PowerShell. The actual work is done in `install.ps1`, which sits next to it.
 
@@ -64,19 +64,19 @@ Removes the install folder, the PATH entry, and the shortcut. It **never** touch
 
 | Command | Result |
 |---|---|
-| `KindleDeDrm` | Opens the interactive menu |
-| `KindleDeDrm check` | Prints the requirements table and exits |
-| `KindleDeDrm install [parts…] [-Yes] [-Force]` | Same as the current `install` command |
-| `KindleDeDrm convert [-Yes]` | Converts every new book without asking which ones, then exits |
-| `KindleDeDrm clean` | Same as the current `clean` command |
-| `KindleDeDrm help` | Prints usage |
+| `KindleDeDRM` | Opens the interactive menu |
+| `KindleDeDRM check` | Prints the requirements table and exits |
+| `KindleDeDRM install [parts…] [-Yes] [-Force]` | Same as the current `install` command |
+| `KindleDeDRM convert [-Yes]` | Converts every new book without asking which ones, then exits |
+| `KindleDeDRM clean` | Same as the current `clean` command |
+| `KindleDeDRM help` | Prints usage |
 
-`KindleDeDrm.cmd` contains `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0KindleDeDrm.ps1" %*`.
+`KindleDeDRM.cmd` contains `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0KindleDeDRM.ps1" %*`.
 
 ## 4. Main menu
 
 ```
-  KindleDeDrm 1.0          Kindle 1.0.25218  ·  27 books  ·  all prerequisites OK
+  KindleDeDRM 1.0          Kindle 1.0.25218  ·  27 books  ·  all prerequisites OK
   ------------------------------------------------------------
   1) Check prerequisites
   2) Install prerequisites
@@ -141,12 +141,12 @@ Built by `Get-BookIndex` in `lib\Library.ps1`. It combines records from three so
 
 ## 6. Code layout
 
-The repo folder is `KindleDeDrm/`. It replaces `kindle-dedrm/`.
+The repo folder is `KindleDeDRM/`. It replaces `kindle-dedrm/`.
 
 | File | Responsibility | Depends on |
 |---|---|---|
-| `KindleDeDrm.cmd` | PATH launcher | – |
-| `KindleDeDrm.ps1` | Parses arguments, loads `lib\*.ps1`, sends commands to their handlers or starts the menu loop | all of `lib` |
+| `KindleDeDRM.cmd` | PATH launcher | – |
+| `KindleDeDRM.ps1` | Parses arguments, loads `lib\*.ps1`, sends commands to their handlers or starts the menu loop | all of `lib` |
 | `lib\Config.ps1` | `$Pinned` versions, URLs, paths, `Get-Settings` and `Save-Settings` | – |
 | `lib\Ui.ps1` | `Say/Step/Ok/Warn/Fail`, `Confirm-Step`, `Read-MenuChoice`, `Format-Table`-style printing, `ConvertFrom-Selection` (parses `1,3 2-5 all new`) | – |
 | `lib\Native.ps1` | `Invoke-Native`, `Invoke-Elevated`, `Save-File`, `Save-GitHubAsset` (SHA-256 check), `Stop-AppIfRunning` | Ui |
@@ -207,17 +207,17 @@ All data files live in `%LOCALAPPDATA%\kindle-dedrm\`, the same place as today.
 
 **Manual checks on this PC:**
 
-1. `install.cmd`, then in a new terminal `KindleDeDrm` opens the menu. The Start-menu shortcut also works.
+1. `install.cmd`, then in a new terminal `KindleDeDRM` opens the menu. The Start-menu shortcut also works.
 2. Menu 1 shows everything as OK.
 3. Menu 2 reports that nothing is missing.
 4. Menu 3: search for "orwell", pick `1`, Re-convert. The EPUB in `Kindle EPUBs` is replaced (its timestamp changes) and no duplicate file appears.
 5. Menu 3: Re-export one book, and the file is overwritten.
 6. Menu 3: blank search lists all 27 books with correct statuses.
-7. `KindleDeDrm convert -Yes` ends with "nothing new".
+7. `KindleDeDRM convert -Yes` ends with "nothing new".
 8. `uninstall.cmd` removes the PATH entry and the shortcut, and `%LOCALAPPDATA%\kindle-dedrm\` is still there.
 
 ## 9. Migration
 
-- `kindle-dedrm/` is removed from the repo once `KindleDeDrm/` works.
+- `kindle-dedrm/` is removed from the repo once `KindleDeDRM/` works.
 - No data migration is needed, because the data folder is the same.
 - `index.json` is filled in automatically the first time menu 3 runs: 27 books × about 2 s.

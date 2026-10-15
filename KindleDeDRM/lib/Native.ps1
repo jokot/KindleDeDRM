@@ -32,12 +32,12 @@ function Stop-AppIfRunning($process, $label) {
 function Save-File($url, $dest) {
     New-Item -ItemType Directory -Force (Split-Path $dest) | Out-Null
     Say "  downloading $url"
-    Invoke-WebRequest $url -OutFile $dest -UseBasicParsing -Headers @{ 'User-Agent' = 'KindleDeDrm' }
+    Invoke-WebRequest $url -OutFile $dest -UseBasicParsing -Headers @{ 'User-Agent' = 'KindleDeDRM' }
 }
 
 # Downloads a GitHub release asset and checks it against the SHA-256 GitHub publishes.
 function Save-GitHubAsset($repo, $tag, $assetName) {
-    $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers @{ 'User-Agent' = 'KindleDeDrm' }
+    $release = Invoke-RestMethod "https://api.github.com/repos/$repo/releases/tags/$tag" -Headers @{ 'User-Agent' = 'KindleDeDRM' }
     $asset = $release.assets | Where-Object name -eq $assetName
     if (-not $asset) { throw "$assetName not found in $repo release $tag" }
     $dest = Join-Path $DownloadDir "$($repo -replace '/', '_')\$tag\$assetName"

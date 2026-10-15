@@ -225,7 +225,7 @@ function Show-Requirements {
 
     $missing = @($reqs | Where-Object { -not $_.Ok -and $_.Component -ne '-' } | ForEach-Object Component | Select-Object -Unique)
     if ($missing) {
-        Say "`n  Next: choose 2) Install prerequisites   (or: KindleDeDrm install $($missing -join ' '))"
+        Say "`n  Next: choose 2) Install prerequisites   (or: KindleDeDRM install $($missing -join ' '))"
     } else {
         Say ''
         Ok 'everything is installed'

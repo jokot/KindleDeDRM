@@ -1,4 +1,4 @@
-# Removes the KindleDeDrm app, its PATH entry and shortcut. Never touches books, keys or Calibre.
+# Removes the KindleDeDRM app, its PATH entry and shortcut. Never touches books, keys or Calibre.
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'lib\Setup.ps1')
 

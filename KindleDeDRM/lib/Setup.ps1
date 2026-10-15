@@ -26,15 +26,15 @@ function Set-UserPath([string]$value) {
     $key = [Microsoft.Win32.Registry]::CurrentUser.OpenSubKey('Environment', $true)
     try { $key.SetValue('Path', $value, [Microsoft.Win32.RegistryValueKind]::ExpandString) } finally { $key.Close() }
     # Tell Explorer and new terminals that the environment changed.
-    if (-not ('KindleDeDrm.EnvNotify' -as [type])) {
-        Add-Type -Namespace KindleDeDrm -Name EnvNotify -MemberDefinition @'
+    if (-not ('KindleDeDRM.EnvNotify' -as [type])) {
+        Add-Type -Namespace KindleDeDRM -Name EnvNotify -MemberDefinition @'
 [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
 public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint fuFlags, uint uTimeout, out UIntPtr lpdwResult);
 '@
     }
     $result = [UIntPtr]::Zero
-    $null = [KindleDeDrm.EnvNotify]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result)
+    $null = [KindleDeDRM.EnvNotify]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, 'Environment', 2, 5000, [ref]$result)
 }
 
-$InstallDir   = Join-Path $env:LOCALAPPDATA 'Programs\KindleDeDrm'
-$ShortcutPath = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\KindleDeDrm.lnk'
+$InstallDir   = Join-Path $env:LOCALAPPDATA 'Programs\KindleDeDRM'
+$ShortcutPath = Join-Path $env:APPDATA 'Microsoft\Windows\Start Menu\Programs\KindleDeDRM.lnk'

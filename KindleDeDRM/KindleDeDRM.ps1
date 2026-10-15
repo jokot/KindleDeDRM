@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    KindleDeDrm - turn Kindle books you own into DRM-free EPUB files (Windows 11).
+    KindleDeDRM - turn Kindle books you own into DRM-free EPUB files (Windows 11).
 
 .DESCRIPTION
     Run with no arguments for the interactive menu, or with a command:
@@ -30,11 +30,11 @@ foreach ($file in 'Config', 'Ui', 'Native', 'Prereqs', 'Library', 'Pipeline', 'M
 function Show-Help {
     Say @"
 
-KindleDeDrm $AppVersion - turn Kindle books you own into DRM-free EPUB files (Windows 11)
+KindleDeDRM $AppVersion - turn Kindle books you own into DRM-free EPUB files (Windows 11)
 
 USAGE
-  KindleDeDrm                    open the menu
-  KindleDeDrm <command> [options]
+  KindleDeDRM                    open the menu
+  KindleDeDRM <command> [options]
 
 COMMANDS
   check                  show what is required and what is already installed
@@ -58,7 +58,7 @@ OPTIONS (this run only; use the Settings menu to change them permanently)
 function Invoke-ConvertAll($settings) {
     $missing = @(Get-MissingRequirements)
     if ($missing) {
-        $missing | ForEach-Object { Fail "$($_.Name) - run: KindleDeDrm install $($_.Component)" }
+        $missing | ForEach-Object { Fail "$($_.Name) - run: KindleDeDRM install $($_.Component)" }
         throw 'requirements missing'
     }
     Stop-AppIfRunning 'calibre' 'Calibre'
@@ -91,7 +91,7 @@ try {
         'convert' { Invoke-ConvertAll $settings }
         'clean'   { Invoke-Clean }
         'help'    { Show-Help }
-        default   { throw "unknown command '$Command' - run: KindleDeDrm help" }
+        default   { throw "unknown command '$Command' - run: KindleDeDRM help" }
     }
 } catch {
     Write-Host "`nError: $($_.Exception.Message)" -ForegroundColor Red

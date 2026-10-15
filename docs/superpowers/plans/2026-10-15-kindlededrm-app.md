@@ -1,13 +1,13 @@
-# KindleDeDrm App Implementation Plan
+# KindleDeDRM App Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to carry out this plan task by task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn the single-file `kindle-dedrm/kindle-dedrm.ps1` command-line tool into an app called **KindleDeDrm**. It is installed once, launched as `KindleDeDrm`, and offers a menu for: checking prerequisites, installing prerequisites, and DeDRM (search for books, then convert, re-convert or re-export them).
+**Goal:** Turn the single-file `kindle-dedrm/kindle-dedrm.ps1` command-line tool into an app called **KindleDeDRM**. It is installed once, launched as `KindleDeDRM`, and offers a menu for: checking prerequisites, installing prerequisites, and DeDRM (search for books, then convert, re-convert or re-export them).
 
 **Architecture:**
 - The logic that already works moves out of `kindle-dedrm/kindle-dedrm.ps1` into focused `lib\*.ps1` files. Each file only defines functions.
-- `KindleDeDrm.ps1` dot-sources them. With no arguments it starts a numbered-menu loop. With arguments it runs a single command.
-- A per-user installer copies the app to `%LOCALAPPDATA%\Programs\KindleDeDrm`, adds that folder to the user PATH, and adds a Start-menu shortcut.
+- `KindleDeDRM.ps1` dot-sources them. With no arguments it starts a numbered-menu loop. With arguments it runs a single command.
+- A per-user installer copies the app to `%LOCALAPPDATA%\Programs\KindleDeDRM`, adds that folder to the user PATH, and adds a Start-menu shortcut.
 
 **Tech Stack:** Windows PowerShell 5.1 and Pester 3.4.0 (both included with Windows). External tools used: Calibre CLI (`calibredb`, `ebook-convert`, `ebook-meta`, `calibre-customize`), Satsuoni's `MSIXKFXArchiver`, and winget.
 
@@ -21,7 +21,7 @@
 - Every `.ps1` and `.cmd` file must be **ASCII-only**, because PS 5.1 reads files without a BOM as ANSI.
 - Keep each file under about 300 lines.
 - Pester 3.4 syntax only: `Should Be`, `Should BeExactly`, `Should Throw`, `Should Match`, `Should BeNullOrEmpty`. Do not use the `-Be` dash syntax.
-- Data folder: `%LOCALAPPDATA%\kindle-dedrm\` (unchanged). Install folder: `%LOCALAPPDATA%\Programs\KindleDeDrm\`.
+- Data folder: `%LOCALAPPDATA%\kindle-dedrm\` (unchanged). Install folder: `%LOCALAPPDATA%\Programs\KindleDeDRM\`.
 - Pinned versions: Calibre `9.16.0`, DeDRM tag `v10.0.32`, Kindle build `25218`, KFX Input `2.34.2`. Kindle Store ID `9P8JQ0JJSTLL`.
 - Calibre and Kindle may only be closed after the user confirms, unless `-Yes` is given.
 - Never use `Remove-Item -Recurse` on a folder that may contain junctions. Junctions are removed with `DirectoryInfo.Delete()` (as `Reset-JunctionDir` already does).
@@ -29,7 +29,7 @@
 
 ## Decisions this plan adds to the spec
 
-- **Menu code** goes in a new file, `lib\Menu.ps1`, so that `KindleDeDrm.ps1` stays small. `KindleDeDrm.ps1` only parses arguments and dispatches.
+- **Menu code** goes in a new file, `lib\Menu.ps1`, so that `KindleDeDRM.ps1` stays small. `KindleDeDRM.ps1` only parses arguments and dispatches.
 - **Export overwrite:** `calibredb export` names files after its own template (for example "Best Minds, The - …"), so the exported file name can't be predicted in advance. Instead, `Export-Epubs` exports **one book at a time** into a fresh temporary folder and then uses `Move-Item -Force` to move that file into `OutDir`. It returns the final path for each book, and that path is saved in `index.json` as `Exported`, which "Open folder" uses.
 - **Author format:** `index.json` stores `Authors` as one string joined with ` & `, the same format `calibredb --for-machine` uses. It does not store an array.
 - **Books without an ASIN:** Calibre books that have no `mobi-asin` identifier are still listed. Their `Asin` is `$null` and their status is `not downloaded`.
@@ -46,9 +46,9 @@
 ## File Structure
 
 ```
-KindleDeDrm/
-  KindleDeDrm.cmd          launcher on PATH
-  KindleDeDrm.ps1          param parsing, loads lib, CLI dispatch or Start-MainMenu
+KindleDeDRM/
+  KindleDeDRM.cmd          launcher on PATH
+  KindleDeDRM.ps1          param parsing, loads lib, CLI dispatch or Start-MainMenu
   install.cmd / install.ps1
   uninstall.cmd / uninstall.ps1
   README.md
@@ -72,15 +72,15 @@ $lib = Join-Path (Split-Path -Parent $MyInvocation.MyCommand.Path) '..\lib'
 . "$lib\Config.ps1"; . "$lib\Ui.ps1"   # plus the file under test and its deps
 ```
 
-Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\tests"`.
+Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDRM\tests"`.
 
 ---
 
 ### Task 1: Config and settings
 
 **Files:**
-- Create: `KindleDeDrm/lib/Config.ps1`
-- Test: `KindleDeDrm/tests/Config.Tests.ps1`
+- Create: `KindleDeDRM/lib/Config.ps1`
+- Test: `KindleDeDRM/tests/Config.Tests.ps1`
 
 **Interfaces:**
 - Produces:
@@ -94,16 +94,16 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
   - `Save then Get round-trips`: save OutDir `C:\x`, StallSeconds `60`, then read them back.
   - `fills missing keys with defaults`: the file contains `{"OutDir":"C:\\y"}`, so OutDir is `C:\y` and Library is the default.
   - `corrupt file is renamed to .bad and defaults returned`: the file contains `{nope`. Afterwards `Test-Path "$path.bad"` is `$true`, and StallSeconds is 300.
-- [ ] **Step 2:** Run `Invoke-Pester .\KindleDeDrm\tests\Config.Tests.ps1`. Expected: FAIL (`Get-Settings` not recognized).
+- [ ] **Step 2:** Run `Invoke-Pester .\KindleDeDRM\tests\Config.Tests.ps1`. Expected: FAIL (`Get-Settings` not recognized).
 - [ ] **Step 3: Implement `lib\Config.ps1`.** Copy the constants and path variables from the old script lines 27-50. On corrupt JSON, `Get-Settings` calls `Warn` only if it is defined (`Get-Command Warn -ErrorAction SilentlyContinue`), so that Config has no dependencies. `Save-Settings` writes `ConvertTo-Json` and creates the parent folder.
 - [ ] **Step 4:** Run the tests again. Expected: 4 passed.
-- [ ] **Step 5:** `git add KindleDeDrm/lib/Config.ps1 KindleDeDrm/tests/Config.Tests.ps1; git commit -m "feat(app): config and persisted settings"`
+- [ ] **Step 5:** `git add KindleDeDRM/lib/Config.ps1 KindleDeDRM/tests/Config.Tests.ps1; git commit -m "feat(app): config and persisted settings"`
 
 ### Task 2: UI helpers and selection parser
 
 **Files:**
-- Create: `KindleDeDrm/lib/Ui.ps1`
-- Test: `KindleDeDrm/tests/Ui.Tests.ps1`
+- Create: `KindleDeDRM/lib/Ui.ps1`
+- Test: `KindleDeDRM/tests/Ui.Tests.ps1`
 
 **Interfaces:**
 - Produces:
@@ -129,7 +129,7 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
     - `'new'` with empty NewIndexes throws `*no new books*`
 
   Compare arrays with `($r -join ',') | Should Be '1,3'`.
-- [ ] **Step 2:** Run `Invoke-Pester .\KindleDeDrm\tests\Ui.Tests.ps1`. Expected: FAIL.
+- [ ] **Step 2:** Run `Invoke-Pester .\KindleDeDRM\tests\Ui.Tests.ps1`. Expected: FAIL.
 - [ ] **Step 3:** Implement `lib\Ui.ps1`. Port the output helpers from the old lines 55-66. In the parser, split on `,`, then match each part against `^\d+$` or `^(\d+)-(\d+)$`.
 - [ ] **Step 4:** Run the tests again. Expected: 12 passed.
 - [ ] **Step 5:** `git commit -m "feat(app): ui helpers and selection parser"` (stage both files).
@@ -137,8 +137,8 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
 ### Task 3: Native helpers and prerequisites
 
 **Files:**
-- Create: `KindleDeDrm/lib/Native.ps1`, `KindleDeDrm/lib/Prereqs.ps1`
-- Test: `KindleDeDrm/tests/Prereqs.Tests.ps1`
+- Create: `KindleDeDRM/lib/Native.ps1`, `KindleDeDRM/lib/Prereqs.ps1`
+- Test: `KindleDeDRM/tests/Prereqs.Tests.ps1`
 
 **Interfaces:**
 - Consumes: Config variables and Ui helpers.
@@ -148,7 +148,7 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
     - Port `Get-WindowsBuild`, `Get-VcRedistVersion`, `Get-KindlePackage`, `Get-KindleBuild`, `Get-KindleContentDir`, `Get-CalibreVersion`, `Get-CalibrePlugins` (keeping `$script:PluginCache`), `Test-StoreUpdatesOff`, `Get-Requirements`, `$Components`, `$RequirementFor`, every `Install-*`, `Set-StoreAutoUpdate`, `Show-Requirements` and `Invoke-Install`.
     - **Changed signature:** `Find-Archiver [-Build <int>] [-Dir <string>] -> FileInfo|$null`. The defaults are `(Get-KindleBuild)` and `$ToolsDir`.
     - **New:** `Get-MissingRequirements -> obj[]`, the requirements where `-not Ok -and Component -ne '-'`.
-    - In `Show-Requirements`, change the "Next:" hint text to `choose 2) Install prerequisites (or: KindleDeDrm install <parts>)`.
+    - In `Show-Requirements`, change the "Next:" hint text to `choose 2) Install prerequisites (or: KindleDeDRM install <parts>)`.
 
 - [ ] **Step 1: Write failing tests**
   - In `TestDrive:\tools`, create the empty files `MSIXKFXArchiver_x64_1_25218.exe` and `MSIXKFXArchiver1_23620_final.exe`.
@@ -160,7 +160,7 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
 - [ ] **Step 3:** Port the code into the two files as listed under Interfaces.
 - [ ] **Step 4:** Run the tests again. Expected: 4 passed. Then run this smoke check:
   ```
-  powershell -NoProfile -Command ". .\KindleDeDrm\lib\Config.ps1; . .\KindleDeDrm\lib\Ui.ps1; . .\KindleDeDrm\lib\Native.ps1; . .\KindleDeDrm\lib\Prereqs.ps1; Show-Requirements"
+  powershell -NoProfile -Command ". .\KindleDeDRM\lib\Config.ps1; . .\KindleDeDRM\lib\Ui.ps1; . .\KindleDeDRM\lib\Native.ps1; . .\KindleDeDRM\lib\Prereqs.ps1; Show-Requirements"
   ```
   Expected: every row says OK (this PC already has everything installed).
 - [ ] **Step 5:** `git commit -m "feat(app): native helpers and prerequisites module"`
@@ -168,8 +168,8 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
 ### Task 4: Book index (merge, titles, search)
 
 **Files:**
-- Create: `KindleDeDrm/lib/Library.ps1`
-- Test: `KindleDeDrm/tests/Library.Tests.ps1`
+- Create: `KindleDeDRM/lib/Library.ps1`
+- Test: `KindleDeDRM/tests/Library.Tests.ps1`
 
 **Interfaces:**
 - Consumes: `Invoke-Native`, `Get-KindleContentDir`, `$ArchiveDir`, `$IndexPath`, `$Calibredb`, `$CalibreDir`.
@@ -208,8 +208,8 @@ Run all tests with `powershell -NoProfile -Command "Invoke-Pester .\KindleDeDrm\
 ### Task 5: Pipeline with per-book selection
 
 **Files:**
-- Create: `KindleDeDrm/lib/Pipeline.ps1`
-- Test: `KindleDeDrm/tests/Pipeline.Tests.ps1`
+- Create: `KindleDeDRM/lib/Pipeline.ps1`
+- Test: `KindleDeDRM/tests/Pipeline.Tests.ps1`
 
 **Interfaces:**
 - Consumes: Native, Prereqs (`Find-Archiver`), Library (records from `Get-BookIndex`, plus `Read/Save/Update-TitleIndex`).
@@ -241,7 +241,7 @@ This task has no pure logic to unit-test: it orchestrates external tools. It is 
 ### Task 6: Entry point and CLI commands
 
 **Files:**
-- Create: `KindleDeDrm/KindleDeDrm.ps1`, `KindleDeDrm/KindleDeDrm.cmd`
+- Create: `KindleDeDRM/KindleDeDRM.ps1`, `KindleDeDRM/KindleDeDRM.cmd`
 
 **Interfaces:**
 - Consumes: every `lib` file; `Start-MainMenu` comes from Task 7.
@@ -258,27 +258,27 @@ This task has no pure logic to unit-test: it orchestrates external tools. It is 
     - `clean` → `Invoke-Clean`
     - `help` → usage text, with the old command list plus a line saying "run with no arguments for the menu"
   - The whole dispatch is wrapped in try/catch, which prints `Error:` and then `exit 1`.
-  - `KindleDeDrm.cmd` contains: `@echo off` followed by `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0KindleDeDrm.ps1" %*`
+  - `KindleDeDRM.cmd` contains: `@echo off` followed by `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0KindleDeDRM.ps1" %*`
 
-- [ ] **Step 1:** Create both files. Until Task 7 exists, `Start-MainMenu` is a stub in `KindleDeDrm.ps1` that says "menu coming in Task 7".
+- [ ] **Step 1:** Create both files. Until Task 7 exists, `Start-MainMenu` is a stub in `KindleDeDRM.ps1` that says "menu coming in Task 7".
 - [ ] **Step 2: Verify**
-  - `.\KindleDeDrm\KindleDeDrm.cmd check`: the table appears and every row is OK.
-  - `.\KindleDeDrm\KindleDeDrm.cmd convert -Yes`: prints "nothing new" (no books have Status new, extracted or in Calibre). Exit code 0.
-  - `.\KindleDeDrm\KindleDeDrm.cmd bogus`: exit code is non-zero.
+  - `.\KindleDeDRM\KindleDeDRM.cmd check`: the table appears and every row is OK.
+  - `.\KindleDeDRM\KindleDeDRM.cmd convert -Yes`: prints "nothing new" (no books have Status new, extracted or in Calibre). Exit code 0.
+  - `.\KindleDeDRM\KindleDeDRM.cmd bogus`: exit code is non-zero.
 - [ ] **Step 3:** Run all tests. Expected: everything still passes.
-- [ ] **Step 4:** `git commit -m "feat(app): KindleDeDrm entry point and CLI commands"`
+- [ ] **Step 4:** `git commit -m "feat(app): KindleDeDRM entry point and CLI commands"`
 
 ### Task 7: Main, prerequisites and settings menus
 
 **Files:**
-- Create: `KindleDeDrm/lib/Menu.ps1`
-- Modify: `KindleDeDrm/KindleDeDrm.ps1` (remove the stub and dot-source Menu.ps1)
+- Create: `KindleDeDRM/lib/Menu.ps1`
+- Modify: `KindleDeDRM/KindleDeDRM.ps1` (remove the stub and dot-source Menu.ps1)
 
 **Interfaces:**
 - Consumes: Ui (`Read-MenuChoice`), Prereqs (`Get-MissingRequirements`, `Show-Requirements`, `$Components`, `Install-*`, `Set-StoreAutoUpdate`), Config (`Save-Settings`), Pipeline (`Invoke-Clean`).
 - Produces:
   - `Start-MainMenu -Settings <obj>`:
-    - Loops: clear the screen, print the header `KindleDeDrm <ver>` with the status line `Kindle <ver>  .  <n> books  .  all prerequisites OK|<n> missing - choose 2`, print the menu exactly as in spec section 4, then `Read-MenuChoice -Valid '0','1','2','3','4','5'`.
+    - Loops: clear the screen, print the header `KindleDeDRM <ver>` with the status line `Kindle <ver>  .  <n> books  .  all prerequisites OK|<n> missing - choose 2`, print the menu exactly as in spec section 4, then `Read-MenuChoice -Valid '0','1','2','3','4','5'`.
     - Each action runs inside `try { … } catch { Fail "Error: …" }`, followed by `Read-Host '  Press Enter to return to the menu'`.
     - Use ASCII `.` and `-` in place of the spec's `·` and `–`.
   - `Show-PrereqMenu`:
@@ -291,7 +291,7 @@ This task has no pure logic to unit-test: it orchestrates external tools. It is 
   - Menu item 3 calls `Show-BooksMenu` (Task 8). If `Get-MissingRequirements` is not empty, it lists the missing items and returns to the menu.
 
 - [ ] **Step 1:** Implement `lib\Menu.ps1` with `Show-BooksMenu` as a stub.
-- [ ] **Step 2: Verify manually** by running `.\KindleDeDrm\KindleDeDrm.cmd`:
+- [ ] **Step 2: Verify manually** by running `.\KindleDeDRM\KindleDeDRM.cmd`:
   - The header shows `27 books . all prerequisites OK`.
   - 1 shows the table.
   - 2 says everything is installed.
@@ -304,7 +304,7 @@ This task has no pure logic to unit-test: it orchestrates external tools. It is 
 ### Task 8: DeDRM books screen
 
 **Files:**
-- Modify: `KindleDeDrm/lib/Menu.ps1` (replace the `Show-BooksMenu` stub)
+- Modify: `KindleDeDRM/lib/Menu.ps1` (replace the `Show-BooksMenu` stub)
 
 **Interfaces:**
 - Consumes: Library (`Get-KindleBooks`, `Read-TitleIndex`, `Update-TitleIndex`, `Get-BookIndex`, `Find-Books`), Pipeline (`Invoke-Archiver`, `Invoke-BookAction`), Ui (`Write-BookTable`, `ConvertFrom-Selection`, `Read-MenuChoice`), Native (`Stop-AppIfRunning`).
@@ -338,18 +338,18 @@ This task has no pure logic to unit-test: it orchestrates external tools. It is 
 ### Task 9: Installer and uninstaller
 
 **Files:**
-- Create: `KindleDeDrm/lib/Setup.ps1`, `KindleDeDrm/install.cmd`, `KindleDeDrm/install.ps1`, `KindleDeDrm/uninstall.cmd`, `KindleDeDrm/uninstall.ps1`
-- Test: `KindleDeDrm/tests/Setup.Tests.ps1`
+- Create: `KindleDeDRM/lib/Setup.ps1`, `KindleDeDRM/install.cmd`, `KindleDeDRM/install.ps1`, `KindleDeDRM/uninstall.cmd`, `KindleDeDRM/uninstall.ps1`
+- Test: `KindleDeDRM/tests/Setup.Tests.ps1`
 
 **Interfaces:**
 - Produces:
   - `Add-PathEntry -PathValue <string> -Dir <string> -> string`: appends `;Dir` unless an entry equal to it (ignoring case and a trailing `\`) is already there. Empty entries are dropped.
   - `Remove-PathEntry -PathValue <string> -Dir <string> -> string`: removes every entry that matches by the same rule.
   - `install.ps1`:
-    - Copies `KindleDeDrm.cmd`, `KindleDeDrm.ps1`, `README.md` and `lib\` to `$InstallDir = "$env:LOCALAPPDATA\Programs\KindleDeDrm"` (overwriting).
+    - Copies `KindleDeDRM.cmd`, `KindleDeDRM.ps1`, `README.md` and `lib\` to `$InstallDir = "$env:LOCALAPPDATA\Programs\KindleDeDRM"` (overwriting).
     - Sets the user PATH via `[Environment]::SetEnvironmentVariable('Path', (Add-PathEntry ...), 'User')`.
-    - Creates the shortcut `"$env:APPDATA\Microsoft\Windows\Start Menu\Programs\KindleDeDrm.lnk"` through `WScript.Shell`. Its target is `powershell.exe`, its arguments are `-NoProfile -ExecutionPolicy Bypass -NoExit -File "<InstallDir>\KindleDeDrm.ps1"`, and its working directory is `%USERPROFILE%`.
-    - Prints `Installed. Open a new terminal and run: KindleDeDrm`.
+    - Creates the shortcut `"$env:APPDATA\Microsoft\Windows\Start Menu\Programs\KindleDeDRM.lnk"` through `WScript.Shell`. Its target is `powershell.exe`, its arguments are `-NoProfile -ExecutionPolicy Bypass -NoExit -File "<InstallDir>\KindleDeDRM.ps1"`, and its working directory is `%USERPROFILE%`.
+    - Prints `Installed. Open a new terminal and run: KindleDeDRM`.
   - `uninstall.ps1` reverses those three steps and prints that `%LOCALAPPDATA%\kindle-dedrm` was kept.
   - Each `.cmd` file contains: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0<name>.ps1"`.
 
@@ -363,19 +363,19 @@ This task has no pure logic to unit-test: it orchestrates external tools. It is 
 - [ ] **Step 2:** Run the tests. Expected: FAIL.
 - [ ] **Step 3:** Implement `Setup.ps1` and the four install/uninstall scripts.
 - [ ] **Step 4: Run the tests (6 pass), then verify**
-  - Run `KindleDeDrm\install.cmd` twice. `[Environment]::GetEnvironmentVariable('Path','User')` contains the install directory exactly once.
-  - In a **new** terminal, `KindleDeDrm check` works.
+  - Run `KindleDeDRM\install.cmd` twice. `[Environment]::GetEnvironmentVariable('Path','User')` contains the install directory exactly once.
+  - In a **new** terminal, `KindleDeDRM check` works.
   - The Start-menu shortcut opens the menu.
 - [ ] **Step 5:** `git commit -m "feat(app): per-user installer and uninstaller"`
 
 ### Task 10: README, retire old CLI, final verification
 
 **Files:**
-- Create: `KindleDeDrm/README.md`. Adapt `kindle-dedrm/README.md`: install/uninstall steps first, then the menu walkthrough, then CLI usage, requirements table, files table and troubleshooting.
+- Create: `KindleDeDRM/README.md`. Adapt `kindle-dedrm/README.md`: install/uninstall steps first, then the menu walkthrough, then CLI usage, requirements table, files table and troubleshooting.
 - Delete: `kindle-dedrm/` (via `git rm -r kindle-dedrm`)
 
 - [ ] **Step 1:** Write the README and remove the old folder.
-- [ ] **Step 2:** Run the full test suite (`Invoke-Pester .\KindleDeDrm\tests`). Expected: 0 failed.
+- [ ] **Step 2:** Run the full test suite (`Invoke-Pester .\KindleDeDRM\tests`). Expected: 0 failed.
 - [ ] **Step 3:** Run the full spec section 8 manual checklist against the **installed** copy (re-run `install.cmd` first), plus these extra checks:
   - **Review Focus 4:** in menu 3, search `saint`. The Little Prince's author shows as `Antoine de Saint-Exupery`, with no mangled characters.
   - Run `uninstall.cmd`. The shortcut and PATH entry are gone, and `%LOCALAPPDATA%\kindle-dedrm\work\archived_kfx` still holds 27 files.

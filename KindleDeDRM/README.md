@@ -1,6 +1,6 @@
-# KindleDeDrm
+# KindleDeDRM
 
-Turn the Kindle books you own into DRM-free EPUB files on Windows 11. You install it once, then run `KindleDeDrm` in any terminal.
+Turn the Kindle books you own into DRM-free EPUB files on Windows 11. You install it once, then run `KindleDeDRM` in any terminal.
 
 ```
 Kindle for Windows --> MSIXKFXArchiver --> Calibre (DeDRM + KFX Input) --> EPUB
@@ -12,10 +12,10 @@ It's written in plain Windows PowerShell 5.1, so you don't need to install anyth
 ## Install
 
 1. Run `install.cmd` from this folder (double-click it, or run it in a terminal). It:
-   - copies the app to `%LOCALAPPDATA%\Programs\KindleDeDrm`
+   - copies the app to `%LOCALAPPDATA%\Programs\KindleDeDRM`
    - adds that folder to **your** PATH (no admin rights needed)
-   - adds a **KindleDeDrm** Start-menu shortcut
-2. Open a **new** terminal and run `KindleDeDrm`.
+   - adds a **KindleDeDRM** Start-menu shortcut
+2. Open a **new** terminal and run `KindleDeDRM`.
 
 To update, run `install.cmd` again.
 
@@ -24,7 +24,7 @@ To update, run `install.cmd` again.
 ## Using the menu
 
 ```
-  KindleDeDrm 1.0          Kindle 1.0.25218  .  27 books  .  all prerequisites OK
+  KindleDeDRM 1.0          Kindle 1.0.25218  .  27 books  .  all prerequisites OK
   ------------------------------------------------------------
   1) Check prerequisites
   2) Install prerequisites
@@ -63,18 +63,18 @@ Book statuses:
 
 1. In Kindle, download the books, **a few at a time**. Bulk downloads can be missing images.
 2. Open each new book once and page to the end.
-3. Close Kindle. KindleDeDrm offers to do this for you.
+3. Close Kindle. KindleDeDRM offers to do this for you.
 
 ## Command line
 
 ```
-KindleDeDrm                    open the menu
-KindleDeDrm check              requirements table
-KindleDeDrm install [parts]    vcredist calibre kindle dedrm-tools dedrm-plugin kfx-input
+KindleDeDRM                    open the menu
+KindleDeDRM check              requirements table
+KindleDeDRM install [parts]    vcredist calibre kindle dedrm-tools dedrm-plugin kfx-input
                                store-updates-off store-updates-on
-KindleDeDrm convert            convert every new book
-KindleDeDrm clean              delete extractor temp files
-KindleDeDrm help
+KindleDeDRM convert            convert every new book
+KindleDeDRM clean              delete extractor temp files
+KindleDeDRM help
 ```
 
 Options (apply to this run only): `-OutDir <path>`, `-Library <path>`, `-StallSeconds <n>`, `-Yes`, `-Force`.
@@ -100,7 +100,7 @@ Options (apply to this run only): `-OutDir <path>`, `-Library <path>`, `-StallSe
 
 | Path | Contents |
 |---|---|
-| `%LOCALAPPDATA%\Programs\KindleDeDrm` | The installed app |
+| `%LOCALAPPDATA%\Programs\KindleDeDRM` | The installed app |
 | `%LOCALAPPDATA%\kindle-dedrm\settings.json` | Your settings |
 | `%LOCALAPPDATA%\kindle-dedrm\index.json` | Book titles and where each EPUB was exported |
 | `%LOCALAPPDATA%\kindle-dedrm\work\archived_kfx` | Extracted books (`.kfx-zip`) |
@@ -112,11 +112,11 @@ Options (apply to this run only): `-OutDir <path>`, `-Library <path>`, `-StallSe
 
 | Symptom | Fix |
 |---|---|
-| "Extractor for your Kindle: none for build N" | Kindle updated past the supported build. Find a matching extractor in Satsuoni's releases, change `DeDrmTag` in `lib\Config.ps1`, run `install.cmd`, then `KindleDeDrm install dedrm-tools dedrm-plugin -Force`. |
+| "Extractor for your Kindle: none for build N" | Kindle updated past the supported build. Find a matching extractor in Satsuoni's releases, change `DeDrmTag` in `lib\Config.ps1`, run `install.cmd`, then `KindleDeDRM install dedrm-tools dedrm-plugin -Force`. |
 | A book "hung and was skipped" | In Kindle: Remove download, download again, open it, then Convert again. |
 | "imported as KFX-ZIP - DRM was not removed" | Delete the book in Calibre, download it again in Kindle, then Convert. |
-| `VCRUNTIME140_1.dll was not found` | Menu 2 (or `KindleDeDrm install vcredist`). |
-| `KindleDeDrm` not found after install | Open a new terminal. PATH changes only reach new windows. |
+| `VCRUNTIME140_1.dll was not found` | Menu 2 (or `KindleDeDRM install vcredist`). |
+| `KindleDeDRM` not found after install | Open a new terminal. PATH changes only reach new windows. |
 
 ## Development
 
