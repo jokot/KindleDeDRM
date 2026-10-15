@@ -9,6 +9,13 @@ Kindle for Windows --> MSIXKFXArchiver --> Calibre (DeDRM + KFX Input) --> EPUB
 
 It's written in plain Windows PowerShell 5.1, so you don't need to install anything to run it.
 
+> [!WARNING]
+> **Keep Kindle for Windows at version 1.0.25218.** The book extractor (`MSIXKFXArchiver_x64_1_25218.exe` from Satsuoni's DeDRM tools v10.0.32) works with this one Kindle build only.
+>
+> - **Don't update Kindle, and don't uninstall and reinstall it.** The Microsoft Store always installs the newest version and can't go back to an older one.
+> - On a newer build, extraction stops working until Satsuoni releases a matching extractor.
+> - To stop the Store updating Kindle by itself, turn **Store auto-updates off** in menu 4 (Settings). Removing book downloads inside Kindle is fine.
+
 ## Install
 
 Paste this into PowerShell:

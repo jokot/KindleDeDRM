@@ -147,6 +147,23 @@ function Open-BookFolder($book) {
     else { Warn "$($book.Title): nothing to open yet - convert it first" }
 }
 
+# The legend under the book list: one line per kind of answer.
+function Write-BooksHelp([int]$Hidden, [bool]$ShowAll, [bool]$Searching) {
+    $extra = @()
+    if ($ShowAll) { $extra += 'a = hide Calibre-only books' }
+    elseif ($Hidden) { $extra += "a = show $Hidden hidden Calibre-only book$(if ($Hidden -ne 1) { 's' })" }
+    if ($Searching) { $extra += 'Enter = clear search' }
+    $extra += '0 = back'
+    Write-Host ''
+    foreach ($row in @(
+            @('Pick books', '1,3   2-5   all   new (= not converted yet)'),
+            @('Search', 'type part of a title or author   (for a number, start with /  e.g. /1984)'),
+            @('Also', ($extra -join '   ')))) {
+        Write-Host ('  {0,-12}' -f $row[0]) -NoNewline -ForegroundColor DarkGray
+        Write-Host $row[1]
+    }
+}
+
 function Show-BooksMenu {
     param([Parameter(Mandatory)]$Settings)
     $missing = @(Get-MissingRequirements)
@@ -174,17 +191,16 @@ function Show-BooksMenu {
             $total = @(Find-Books $all '' -DownloadedOnly:(-not $showAll)).Count
             $header = if ($query) { "Search `"$query`" - $($books.Count) of $total $scope" }
                       elseif ($showAll) { "All books ($total)" } else { "Downloaded Kindle books ($total)" }
-            $hidden = @($all | Where-Object { -not $_.Downloaded }).Count
-            $hint = if ($showAll) { '  .  a = hide Calibre-only' } elseif ($hidden) { "  .  $hidden Calibre-only hidden, a = show" } else { '' }
-            Write-Host "`n  $header$hint" -ForegroundColor Cyan
+            Write-Host "`n  $header" -ForegroundColor Cyan
             if ($books.Count) { Write-BookTable $books } else { Warn 'no books match' }
+            Write-BooksHelp -Hidden @($all | Where-Object { -not $_.Downloaded }).Count -ShowAll $showAll -Searching ([bool]$query)
         }
         $redraw = $true
         $newIndexes = @(for ($i = 0; $i -lt $books.Count; $i++) {
             if ('new', 'extracted', 'in Calibre' -contains $books[$i].Status) { $i + 1 }
         })
 
-        $text = Read-Line "`n  Pick (1,3  2-5  all  new), type to search (/text for numbers), blank = full list, a, 0 = back"
+        $text = Read-Line '  >'
         $in = Resolve-BooksInput -Text $text -Count $books.Count -NewIndexes $newIndexes
         switch ($in.Kind) {
             'back'   { return }
