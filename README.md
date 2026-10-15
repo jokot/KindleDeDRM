@@ -67,7 +67,7 @@ This removes the app, the PATH entry and the shortcut. It keeps your extracted b
    - **Refresh:** it first offers to extract any newly downloaded Kindle books (`s` skips this).
    - **List:** every book downloaded in Kindle is shown straight away, unconverted ones first.
    - **One prompt does the rest:**
-     - **Pick** books by number, e.g. `1,3`, `2-5`, `all`, or `new` for everything not yet converted.
+     - **Pick** books by their `#` number: `3` (book 3), `1,3` (books 1 and 3), `2-5` (books 2 to 5), `all` (every book listed), or `new` (every book not converted to EPUB yet).
      - **Search** by typing part of a title or author. The list narrows and the numbers restart from 1. To search for a number or a keyword such as `new`, start with a slash: `/1984`.
      - **Blank** clears the search.
      - `a` shows or hides Calibre-only books (ones no longer downloaded in Kindle, or sideloaded). They're hidden by default.

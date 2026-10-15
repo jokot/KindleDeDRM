@@ -154,14 +154,20 @@ function Write-BooksHelp([int]$Hidden, [bool]$ShowAll, [bool]$Searching) {
     elseif ($Hidden) { $extra += "a = show $Hidden hidden Calibre-only book$(if ($Hidden -ne 1) { 's' })" }
     if ($Searching) { $extra += 'Enter = clear search' }
     $extra += '0 = back'
-    Write-Host ''
+    Write-Host "`n  To choose books, type their # numbers:" -ForegroundColor Cyan
     foreach ($row in @(
-            @('Pick books', '1,3   2-5   all   new (= not converted yet)'),
-            @('Search', 'type part of a title or author   (for a number, start with /  e.g. /1984)'),
-            @('Also', ($extra -join '   ')))) {
-        Write-Host ('  {0,-12}' -f $row[0]) -NoNewline -ForegroundColor DarkGray
-        Write-Host $row[1]
+            @('3', 'book 3'),
+            @('1,3', 'books 1 and 3'),
+            @('2-5', 'books 2, 3, 4 and 5'),
+            @('all', 'every book in the list'),
+            @('new', 'every book not converted to EPUB yet'))) {
+        Write-Host ('    {0,-6}' -f $row[0]) -NoNewline -ForegroundColor Yellow
+        Write-Host $row[1] -ForegroundColor DarkGray
     }
+    Write-Host '  To search, type part of a title or author, e.g. ' -NoNewline -ForegroundColor Cyan
+    Write-Host 'orwell' -NoNewline -ForegroundColor Yellow
+    Write-Host '   (to search for a number, put / first: /1984)' -ForegroundColor DarkGray
+    Write-Host "  $($extra -join '   ')" -ForegroundColor DarkGray
 }
 
 function Show-BooksMenu {
