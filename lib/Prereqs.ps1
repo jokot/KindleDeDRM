@@ -124,6 +124,7 @@ function Install-Kindle {
         Warn "tested with build $($Pinned.KindleBuild); 'Check prerequisites' shows whether an extractor matches yours"
     }
     Say '  Next: open Kindle and sign in to your Amazon account.'
+    Say '  Keep this build: turn Store auto-updates off (Settings), and do not update or reinstall Kindle.'
 }
 
 function Install-DeDrmTools {
@@ -182,7 +183,7 @@ $Components = [ordered]@{
     }
     'kindle' = @{
         Label = 'Kindle for Windows (Microsoft Store)'; Install = { Install-Kindle }
-        Why = 'Downloads your books from Amazon. Its build number must match the extractor.'
+        Why = 'Downloads your books from Amazon. Its build must match the extractor, and the Store only installs the newest build.'
         Source = "Microsoft Store, product ID $KindleStoreId"
         Manual = 'Microsoft Store -> search "Amazon Kindle" -> Install, then sign in'
     }
