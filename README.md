@@ -57,7 +57,8 @@ This removes the app, the PATH entry and the shortcut. It keeps your extracted b
   2) Install prerequisites
   3) DeDRM books
   4) Settings
-  5) Clean temp files
+  5) Rename EPUB files
+  6) Clean temp files
   0) Exit
 ```
 
@@ -78,7 +79,14 @@ This removes the app, the PATH entry and the shortcut. It keeps your extracted b
      - **Re-export:** copies the EPUB to your EPUB folder again.
      - **Open folder:** shows the EPUB in Explorer.
 4. **Settings** lets you change the EPUB folder, the Calibre library, the stall timeout and Microsoft Store auto-updates. They're saved and remembered.
-5. **Clean temp files** deletes the extractor's temporary `C:\Data` folder (about 400 MB).
+5. **Rename EPUB files** tidies the names of EPUB files in any folder, not only ones made by KindleDeDRM:
+   - Each file is named `Title - Author.epub` from the title and author stored inside it. Several authors are joined with ` & `, and Calibre's placeholder author "Unknown" is left out.
+   - A file with no title inside keeps its current name with symbols removed. Letters (accents included), numbers, spaces and `- ' , . & ( )` stay.
+   - Characters Windows doesn't allow are removed, and `:` becomes ` - `.
+   - You see a preview first, and nothing changes until you confirm. Existing files are never overwritten: a clashing name gets ` (2)`.
+   - Press Enter to use your EPUB folder, or drag any folder or file into the window.
+   - Exports from menu 3 use the same naming rule, so a re-export replaces the renamed file instead of adding a second copy.
+6. **Clean temp files** deletes the extractor's temporary `C:\Data` folder (about 400 MB).
 
 Book statuses:
 
@@ -105,11 +113,12 @@ KindleDeDRM check              requirements table
 KindleDeDRM install [parts]    vcredist calibre kindle dedrm-tools dedrm-plugin kfx-input
                                store-updates-off store-updates-on
 KindleDeDRM convert            convert every new book
+KindleDeDRM rename [path]      rename EPUB files to "Title - Author.epub" (default: EPUB folder; -Recurse for subfolders)
 KindleDeDRM clean              delete extractor temp files
 KindleDeDRM help
 ```
 
-Options (apply to this run only): `-OutDir <path>`, `-Library <path>`, `-StallSeconds <n>`, `-Yes`, `-Force`.
+Options (apply to this run only): `-OutDir <path>`, `-Library <path>`, `-StallSeconds <n>`, `-Yes`, `-Force`, `-Recurse`.
 
 ## Requirements
 
@@ -155,7 +164,7 @@ Options (apply to this run only): `-OutDir <path>`, `-Library <path>`, `-StallSe
 | Path | Contents |
 |---|---|
 | `KindleDeDRM.ps1`, `KindleDeDRM.cmd` | Entry point: argument parsing and the menu |
-| [`lib/`](lib) | The app's modules (prerequisites, library index, pipeline, menu, banner) |
+| [`lib/`](lib) | The app's modules (prerequisites, library index, pipeline, EPUB renaming, menu, banner) |
 | [`tests/`](tests) | Pester tests |
 | `install.ps1`, `install.cmd`, `uninstall.ps1`, `uninstall.cmd` | Installer and uninstaller |
 | [`Kindle-DeDRM-Guide.md`](Kindle-DeDRM-Guide.md) | Manual step-by-step guide (the process the app automates) |
