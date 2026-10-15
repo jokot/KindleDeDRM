@@ -19,7 +19,9 @@ function Start-MainMenu {
         if (-not $status) { $status = Get-MenuStatus }
         Clear-Screen
         Write-Host ''
-        Write-Host ("  KindleDeDRM {0,-12} {1}" -f $AppVersion, $status) -ForegroundColor Cyan
+        Show-Banner
+        Write-Host ''
+        Write-Host "  $status" -ForegroundColor Cyan
         Say '  ------------------------------------------------------------'
         Say '  1) Check prerequisites'
         Say '  2) Install prerequisites'
